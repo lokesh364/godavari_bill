@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Godavari Tent Works — Billing</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+:root{--bg:#f0efe9;--surface:#fff;--border:#ddd;--accent:#1a5c3a;--accent-dim:#2a7a50;--text:#1a1a1a;--muted:#666;--input-bg:#fff}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── SELECTOR ── */
+#selector-page{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px}
+.sel-brand{font-size:11px;letter-spacing:3px;color:var(--accent);text-transform:uppercase;margin-bottom:12px;text-align:center}
+.sel-title{font-size:32px;font-weight:700;text-align:center;margin-bottom:6px}
+.sel-sub{color:var(--muted);font-size:15px;text-align:center;margin-bottom:48px}
+.sel-cards{display:flex;gap:24px;flex-wrap:wrap;justify-content:center}
+.sel-card{background:var(--surface);border:2px solid var(--border);border-radius:16px;padding:36px 40px;cursor:pointer;transition:all .2s;text-align:center;min-width:220px}
+.sel-card:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 8px 32px rgba(26,92,58,.12)}
+.sel-card .icon{font-size:42px;margin-bottom:14px}
+.sel-card h2{font-size:20px;font-weight:700;margin-bottom:6px}
+.sel-card p{font-size:13px;color:var(--muted);line-height:1.5}
+
+/* ── SHARED FORM ── */
+.form-wrap{max-width:880px;margin:0 auto;padding:40px 24px 80px;display:none}
+.page-header{border-bottom:1px solid var(--border);padding-bottom:20px;margin-bottom:32px;display:flex;align-items:center;gap:16px}
+.page-header .back-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:7px 14px;border-radius:6px;cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif;transition:all .2s;white-space:nowrap}
+.page-header .back-btn:hover{border-color:var(--accent);color:var(--accent)}
+.page-header .titles .brand{font-size:11px;letter-spacing:3px;color:var(--accent);text-transform:uppercase;margin-bottom:4px}
+.page-header .titles h1{font-size:24px;font-weight:700}
+.section{margin-bottom:28px}
+.section-title{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent);margin-bottom:12px;padding-bottom:7px;border-bottom:1px solid var(--border)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+label{display:block;font-size:11px;color:var(--muted);letter-spacing:.5px;margin-bottom:5px}
+input,textarea,select{width:100%;background:var(--input-bg);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:9px 12px;border-radius:6px;outline:none;transition:border-color .2s}
+input:focus,textarea:focus,select:focus{border-color:var(--accent-dim)}
+textarea{resize:vertical;min-height:60px}
+.goods-table{width:100%;border-collapse:collapse}
+.goods-table th{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:8px 6px;text-align:left;border-bottom:1px solid var(--border)}
+.goods-table td{padding:4px 3px}
+.goods-table input{padding:7px 8px;font-size:13px}
+.col-sn{width:32px}.col-hsn{width:82px}.col-uom{width:70px}.col-qty{width:64px}.col-rate{width:84px}.col-amt{width:94px}.col-del{width:32px}
+.amount-cell{background:#f0f7f3;border:1px solid var(--border);border-radius:6px;padding:7px 8px;font-size:13px;font-family:'DM Mono',monospace;color:var(--accent);display:block;width:100%;font-weight:600}
+.sn-cell{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);text-align:center;padding-top:10px;display:block}
+.btn-del{background:none;border:none;color:#bbb;cursor:pointer;font-size:16px;padding:6px;transition:color .2s}
+.btn-del:hover{color:#e05a5a}
+.add-row-btn{margin-top:10px;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);cursor:pointer;background:none;border:1px dashed var(--border);padding:8px 14px;border-radius:6px;transition:all .2s;width:auto}
+.add-row-btn:hover{border-color:var(--accent);color:var(--accent)}
+.subtotal-box{background:#f0f7f3;border:1px solid #c8e0d4;border-radius:8px;padding:14px}
+.subtotal-line{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:13.5px}
+.subtotal-line.total{border-top:1px solid #c8e0d4;margin-top:8px;padding-top:10px;font-weight:600;font-size:15px}
+.subtotal-line .val{font-family:'DM Mono',monospace;color:var(--accent);font-weight:600}
+.tax-row{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.tax-row label{margin:0;white-space:nowrap;min-width:60px}
+.tax-row input{flex:1}
+.action-bar{display:flex;gap:12px;margin-top:32px}
+.btn-primary{background:var(--accent);color:#fff;border:none;padding:12px 28px;border-radius:8px;font-size:15px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;transition:background .2s}
+.btn-primary:hover{background:var(--accent-dim)}
+.btn-secondary{background:var(--surface);color:var(--text);border:1px solid var(--border);padding:12px 22px;border-radius:8px;font-size:15px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .2s}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.info-banner{background:#f0f7f3;border:1px solid #c8e0d4;border-radius:8px;padding:12px 16px;display:flex;flex-wrap:wrap;gap:18px}
+.info-item{display:flex;flex-direction:column;gap:2px}
+.info-label{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--accent);font-weight:600}
+.info-val{color:var(--text);font-weight:500;font-size:13px}
+
+/* ── PREVIEW PAGE ── */
+#preview-page{display:none;background:#c8c8c4;min-height:100vh;padding:24px 16px}
+.preview-topbar{max-width:800px;margin:0 auto 14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.preview-topbar span{font-size:11px;color:#555;letter-spacing:1px;text-transform:uppercase}
+.preview-actions{display:flex;gap:10px}
+.btn-back-p{background:#fff;border:1px solid #ccc;color:#333;padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;font-family:'DM Sans',sans-serif}
+.btn-back-p:hover{border-color:#888}
+.btn-print{background:var(--accent);color:#fff;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif}
+.btn-print:hover{background:var(--accent-dim)}
+
+/* ══════════════════════════════════
+   TAX INVOICE TEMPLATE
+══════════════════════════════════ */
+#doc-invoice{max-width:800px;width:100%;margin:0 auto;background:#fff;color:#111;font-family:Arial,sans-serif;font-size:11px;border:1.5px solid #333;display:none;flex-direction:column}
+.inv-header{text-align:center;padding:7px 12px 5px;border-bottom:1.5px solid #333;position:relative}
+.inv-header .shree{font-size:9.5px;font-style:italic}
+.inv-header .gst-no{position:absolute;left:8px;top:8px;font-size:9px}
+.inv-header .mobile-no{position:absolute;right:8px;top:8px;font-size:9px}
+.inv-header h2{font-size:19px;font-weight:bold;letter-spacing:1px;margin:2px 0}
+.inv-header .city{font-size:11.5px;font-weight:bold}
+.inv-header .hmobile{font-size:10.5px}
+.inv-header .invoice-title{font-size:12.5px;font-weight:bold;margin-top:2px;text-decoration:underline}
+.inv-meta{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid #333}
+.inv-meta-cell{padding:4px 9px;font-size:10px;border-right:1px solid #333}
+.inv-meta-cell:last-child{border-right:none}
+.inv-meta-cell .lbl{font-weight:bold}
+.inv-details{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid #333}
+.inv-billing{border-right:1px solid #333;padding:5px 9px}
+.inv-transport{padding:5px 9px}
+.inv-sec-title{font-weight:bold;text-align:center;font-size:10px;padding:3px;background:#f0f0f0;border-bottom:1px solid #333;margin:0 -9px 5px;letter-spacing:.5px}
+.inv-f{margin-bottom:2.5px;font-size:10px;line-height:1.4}
+.inv-f .fl{font-weight:bold}
+.inv-goods-title{text-align:center;font-weight:bold;font-size:10.5px;padding:3px;background:#f0f0f0;border-bottom:1px solid #333;border-top:1px solid #333;letter-spacing:.5px}
+.inv-gt{width:100%;border-collapse:collapse}
+.inv-gt th{border:1px solid #333;padding:3px 4px;font-size:10px;text-align:center;background:#fafafa}
+.inv-gt td{border:1px solid #aaa;padding:2.5px 4px;font-size:10px;height:17px}
+.inv-gt .tc{text-align:center}.inv-gt .tr{text-align:right;font-family:'Courier New',monospace}
+.inv-bottom{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #333}
+.inv-bank{border-right:1px solid #333;padding:5px 9px}
+.inv-tax-col{padding:5px 9px}
+.inv-bank-title{font-weight:bold;text-align:center;font-size:10px;padding:3px;background:#f0f0f0;border-bottom:1px solid #333;margin:0 -9px 4px;letter-spacing:.5px}
+.inv-tax-row{display:flex;justify-content:space-between;font-size:10px;padding:2px 0;border-bottom:1px dotted #ccc}
+.inv-tax-row.tot{font-weight:bold;font-size:10.5px;border-bottom:none;padding-top:3px}
+.inv-words{border-top:1.5px solid #333;padding:4px 9px;font-size:10px;min-height:28px}
+.inv-words .fw{font-weight:bold}
+.inv-sig{border-top:1px solid #333;text-align:right;padding:24px 12px 6px;font-size:10px;font-weight:bold}
+
+/* ══════════════════════════════════
+   QUOTATION TEMPLATE
+══════════════════════════════════ */
+#doc-quotation{max-width:800px;width:100%;margin:0 auto;background:#fff;color:#111;font-family:Arial,sans-serif;font-size:11px;border:1.5px solid #333;display:none;flex-direction:column}
+.qt-header{display:grid;grid-template-columns:70px 1fr auto;align-items:center;border-bottom:1.5px solid #333;padding:6px 10px;gap:8px}
+.qt-logo{width:60px;height:60px;border:1.5px solid #333;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:bold;color:#c00;font-family:serif}
+.qt-company h2{font-size:17px;font-weight:900;letter-spacing:.5px;line-height:1.1}
+.qt-company .tagline{font-size:9px;font-style:italic;font-weight:bold;margin-top:1px}
+.qt-company .address{font-size:9px;margin-top:2px}
+.qt-company .city-line{font-size:10px;font-weight:bold;margin-top:1px}
+.qt-right{text-align:right;min-width:130px}
+.qt-right .quot-label{font-size:13px;font-weight:900;border:2px solid #333;padding:2px 10px;display:inline-block;margin-bottom:6px;letter-spacing:1px}
+.qt-right .gstin-label{font-size:8.5px;font-weight:bold}
+.qt-right .gstin-val{font-size:11px;font-weight:bold;letter-spacing:.5px}
+.qt-right .phone{font-size:10.5px;margin-top:4px;font-weight:bold}
+.qt-info{display:grid;grid-template-columns:1fr auto;border-bottom:1px solid #333}
+.qt-bill-col{padding:5px 9px;border-right:1px solid #333}
+.qt-meta-col{padding:5px 9px;min-width:170px}
+.qt-f{font-size:10px;margin-bottom:3px;line-height:1.4;border-bottom:1px dotted #ccc;padding-bottom:2px}
+.qt-f .fl{font-weight:bold}
+.qt-branch-box{border:1px solid #333;padding:4px 8px;margin-top:4px}
+.qt-branch-box .bbl{font-size:9px;font-weight:bold;margin-bottom:2px}
+.qt-branch-box .bbl2{font-size:9.5px;border-bottom:1px dotted #ccc;padding-bottom:2px;margin-bottom:2px}
+/* quotation goods table */
+.qt-gt{width:100%;border-collapse:collapse}
+.qt-gt th{border:1.5px solid #333;padding:3px 4px;font-size:10px;text-align:center;background:#f0f0f0}
+.qt-gt td{border:1px solid #aaa;padding:2.5px 4px;font-size:10px;height:17px}
+.qt-gt .tc{text-align:center}.qt-gt .tr{text-align:right;font-family:'Courier New',monospace}
+/* cgst/sgst/igst sub-headers */
+.qt-tax-header{display:grid;grid-template-columns:repeat(3,1fr);text-align:center}
+.qt-tax-header span{font-size:9px;font-weight:bold;border-right:1px solid #aaa;padding:1px 0}
+.qt-tax-header span:last-child{border-right:none}
+.qt-footer{border-top:1px solid #333;display:grid;grid-template-columns:1fr 1fr 1fr;font-size:9.5px}
+.qt-foot-left{padding:5px 8px;border-right:1px solid #333}
+.qt-foot-mid{padding:5px 8px;border-right:1px solid #333}
+.qt-foot-right{padding:5px 8px}
+.qt-foot-right .qtr-row{display:flex;justify-content:space-between;padding:1.5px 0;font-size:10px;border-bottom:1px dotted #ccc}
+.qt-foot-right .qtr-row.bold{font-weight:bold;border-bottom:none}
+.qt-words-row{border-top:1px solid #333;padding:4px 8px;font-size:10px;display:flex;gap:8px}
+.qt-sig-row{border-top:1px solid #333;display:grid;grid-template-columns:1fr 1fr 1fr;font-size:10px}
+.qt-sig-cell{padding:22px 8px 5px;text-align:center;border-right:1px solid #333;font-weight:bold;font-size:9.5px}
+.qt-sig-cell:last-child{border-right:none}
+
+@media print{
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{background:#fff;margin:0;padding:0}
+  #selector-page,#inv-form,#quot-form{display:none!important}
+  #preview-page{display:block!important;background:#fff;padding:0;margin:0}
+  .preview-topbar{display:none}
+  #doc-invoice,#doc-quotation{max-width:100%;width:100%;margin:0;box-shadow:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ SELECTOR ══════════════ -->
+<div id="selector-page">
+  <div class="sel-brand">Godavari Tent Works · Chirala</div>
+  <div class="sel-title">What would you like to create?</div>
+  <div class="sel-sub">Choose a document type to get started</div>
+  <div class="sel-cards">
+    <div class="sel-card" onclick="startDoc('invoice')">
+      <div class="icon">🧾</div>
+      <h2>Tax Invoice</h2>
+      <p>Issue a GST tax invoice for goods supplied to a customer</p>
+    </div>
+    <div class="sel-card" onclick="startDoc('quotation')">
+      <div class="icon">📋</div>
+      <h2>Quotation</h2>
+      <p>Send a price quotation to a customer before confirming the order</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ INVOICE FORM ══════════════ -->
+<div class="form-wrap" id="inv-form">
+  <div class="page-header">
+    <button class="back-btn" onclick="goBack()">← Back</button>
+    <div class="titles">
+      <div class="brand">Godavari Tent Works</div>
+      <h1>Tax Invoice</h1>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Business Details (Fixed)</div>
+    <div class="info-banner">
+      <div class="info-item"><span class="info-label">GST No</span><span class="info-val">37APVPP7019J1Z3</span></div>
+      <div class="info-item"><span class="info-label">Bank</span><span class="info-val">State Bank of India</span></div>
+      <div class="info-item"><span class="info-label">Account No</span><span class="info-val">38216876197</span></div>
+      <div class="info-item"><span class="info-label">IFSC</span><span class="info-val">SBIN0010206</span></div>
+      <div class="info-item"><span class="info-label">Branch</span><span class="info-val">Chirala</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Invoice Info</div>
+    <div class="grid-2">
+      <div><label>Invoice No</label><input type="text" id="i-invNo" placeholder="e.g. GTW-0042"></div>
+      <div><label>Date</label><input type="date" id="i-date"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Billing &amp; Shipping Details</div>
+    <div class="grid-2">
+      <div><label>Receiver Name</label><input type="text" id="i-name" placeholder="Full name"></div>
+      <div><label>Mobile</label><input type="text" id="i-mobile" placeholder="10-digit number"></div>
+      <div style="grid-column:1/-1"><label>Address</label><textarea id="i-address" placeholder="Street, City, District"></textarea></div>
+      <div><label>GST No (Receiver)</label><input type="text" id="i-recgst" placeholder="Optional"></div>
+      <div><label>State Code</label><input type="text" id="i-state" placeholder="e.g. 37"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Transport Details</div>
+    <div class="grid-2">
+      <div><label>Order No</label><input type="text" id="i-orderNo"></div>
+      <div><label>Transport</label><input type="text" id="i-transport"></div>
+      <div><label>L.R. No</label><input type="text" id="i-lrNo"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Goods Details</div>
+    <table class="goods-table">
+      <thead><tr>
+        <th class="col-sn">#</th><th>Description of Goods</th>
+        <th class="col-hsn">HSN</th><th class="col-qty">Qty</th>
+        <th class="col-rate">Rate (Rs.)</th><th class="col-amt">Amount</th><th class="col-del"></th>
+      </tr></thead>
+      <tbody id="i-goodsBody"></tbody>
+    </table>
+    <button class="add-row-btn" onclick="addRow('i')">+ Add Row</button>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Tax Details</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div>
+        <div class="tax-row"><label>CGST %</label><input type="number" id="i-cgst" value="0" min="0" max="100" step="0.1" oninput="recalc('i')"></div>
+        <div class="tax-row"><label>SGST %</label><input type="number" id="i-sgst" value="0" min="0" max="100" step="0.1" oninput="recalc('i')"></div>
+        <div class="tax-row" style="margin:0"><label>IGST %</label><input type="number" id="i-igst" value="0" min="0" max="100" step="0.1" oninput="recalc('i')"></div>
+      </div>
+      <div class="subtotal-box">
+        <div class="subtotal-line"><span>Sub-Total</span><span class="val" id="i-disp-sub">Rs.0.00</span></div>
+        <div class="subtotal-line"><span>CGST</span><span class="val" id="i-disp-cgst">Rs.0.00</span></div>
+        <div class="subtotal-line"><span>SGST</span><span class="val" id="i-disp-sgst">Rs.0.00</span></div>
+        <div class="subtotal-line"><span>IGST</span><span class="val" id="i-disp-igst">Rs.0.00</span></div>
+        <div class="subtotal-line total"><span>Total</span><span class="val" id="i-disp-total">Rs.0.00</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="action-bar">
+    <button class="btn-primary" onclick="showPreview('invoice')">Preview Invoice</button>
+    <button class="btn-secondary" onclick="clearForm('i')">Clear</button>
+  </div>
+</div>
+
+<!-- ══════════════ QUOTATION FORM ══════════════ -->
+<div class="form-wrap" id="quot-form">
+  <div class="page-header">
+    <button class="back-btn" onclick="goBack()">← Back</button>
+    <div class="titles">
+      <div class="brand">Godavari Tent Works</div>
+      <h1>Quotation</h1>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Business Details (Fixed)</div>
+    <div class="info-banner">
+      <div class="info-item"><span class="info-label">GST No</span><span class="info-val">37APVPP7019J1Z3</span></div>
+      <div class="info-item"><span class="info-label">Bank</span><span class="info-val">State Bank of India</span></div>
+      <div class="info-item"><span class="info-label">Account No</span><span class="info-val">38216876197</span></div>
+      <div class="info-item"><span class="info-label">IFSC</span><span class="info-val">SBIN0010206</span></div>
+      <div class="info-item"><span class="info-label">Branch</span><span class="info-val">Chirala</span></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Quotation Info</div>
+    <div class="grid-2">
+      <div><label>Quotation No</label><input type="text" id="q-no" placeholder="e.g. QT-0010"></div>
+      <div><label>Date</label><input type="date" id="q-date"></div>
+      <div><label>State</label><input type="text" id="q-state" placeholder="e.g. Andhra Pradesh" value="Andhra Pradesh"></div>
+      <div><label>State Code</label><input type="text" id="q-stcode" placeholder="e.g. 37" value="37"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Customer Details</div>
+    <div class="grid-2">
+      <div><label>Customer Name</label><input type="text" id="q-name" placeholder="Full name"></div>
+      <div><label>Phone</label><input type="text" id="q-phone" placeholder="10-digit number"></div>
+      <div style="grid-column:1/-1"><label>Address</label><textarea id="q-address" placeholder="Street, City, District"></textarea></div>
+      <div><label>GSTIN/UIN</label><input type="text" id="q-gstin" placeholder="Optional"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">To Branch (Bank Details on Quotation)</div>
+    <div class="grid-2">
+      <div><label>Bank Name</label><input type="text" id="q-bankname" value="Krishna Bhima Samruddhi Local Area Bank"></div>
+      <div><label>Branch</label><input type="text" id="q-bankbranch" value="Chirala"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Goods Details</div>
+    <table class="goods-table">
+      <thead><tr>
+        <th class="col-sn">#</th><th>Particulars</th>
+        <th class="col-hsn">HSN</th><th class="col-uom">UOM</th><th class="col-qty">Qty</th>
+        <th class="col-rate">Rate</th><th class="col-amt">Amount</th><th class="col-del"></th>
+      </tr></thead>
+      <tbody id="q-goodsBody"></tbody>
+    </table>
+    <button class="add-row-btn" onclick="addRow('q')">+ Add Row</button>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Tax Details</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div>
+        <div class="tax-row"><label>CGST %</label><input type="number" id="q-cgst" value="0" min="0" max="100" step="0.1" oninput="recalc('q')"></div>
+        <div class="tax-row"><label>SGST %</label><input type="number" id="q-sgst" value="0" min="0" max="100" step="0.1" oninput="recalc('q')"></div>
+        <div class="tax-row" style="margin:0"><label>IGST %</label><input type="number" id="q-igst" value="0" min="0" max="100" step="0.1" oninput="recalc('q')"></div>
+      </div>
+      <div class="subtotal-box">
+        <div class="subtotal-line"><span>Sub-Total</span><span class="val" id="q-disp-sub">Rs.0.00</span></div>
+        <div class="subtotal-line"><span>CGST</span><span class="val" id="q-disp-cgst">Rs.0.00</span></div>
+        <div class="subtotal-line"><span>SGST</span><span class="val" id="q-disp-sgst">Rs.0.00</span></div>
+        <div class="subtotal-line"><span>IGST</span><span class="val" id="q-disp-igst">Rs.0.00</span></div>
+        <div class="subtotal-line total"><span>Total</span><span class="val" id="q-disp-total">Rs.0.00</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="action-bar">
+    <button class="btn-primary" onclick="showPreview('quotation')">Preview Quotation</button>
+    <button class="btn-secondary" onclick="clearForm('q')">Clear</button>
+  </div>
+</div>
+
+<!-- ══════════════ PREVIEW PAGE ══════════════ -->
+<div id="preview-page">
+  <div class="preview-topbar">
+    <span id="preview-label">Preview</span>
+    <div class="preview-actions">
+      <button class="btn-back-p" onclick="backToForm()">← Edit</button>
+      <button class="btn-print" onclick="window.print()">⬇ Download PDF</button>
+    </div>
+  </div>
+
+  <!-- TAX INVOICE DOCUMENT -->
+  <div id="doc-invoice">
+    <div class="inv-header">
+      <div class="gst-no">GST No: 37APVPP7019J1Z3</div>
+      <div class="shree">!! Shree Ganeshay Nemah!</div>
+      <div class="mobile-no">Mobile: 9295756242</div>
+      <h2>GODAVARI TENT WORKS</h2>
+      <div class="city">CHIRALA</div>
+      <div class="hmobile">Mobile: 9295756242</div>
+      <div class="invoice-title">TAX INVOICE</div>
+    </div>
+    <div class="inv-meta">
+      <div class="inv-meta-cell"><span class="lbl">Invoice No :</span> <span id="pi-no"></span></div>
+      <div class="inv-meta-cell"><span class="lbl">Date :</span> <span id="pi-date"></span></div>
+    </div>
+    <div class="inv-details">
+      <div class="inv-billing">
+        <div class="inv-sec-title">BILLING &amp; SHIPPING DETAILS</div>
+        <div class="inv-f"><span class="fl">Details of Receiver</span></div>
+        <div class="inv-f"><span class="fl">Name :</span> <span id="pi-name"></span></div>
+        <div class="inv-f"><span class="fl">Address :</span> <span id="pi-addr"></span></div>
+        <div class="inv-f"><span class="fl">GST No :</span> <span id="pi-gst"></span> &nbsp; <span class="fl">State Code :</span> <span id="pi-state"></span></div>
+        <div class="inv-f"><span class="fl">Mobile :</span> <span id="pi-mobile"></span></div>
+      </div>
+      <div class="inv-transport">
+        <div class="inv-sec-title">TRANSPORT DETAILS</div>
+        <div class="inv-f"><span class="fl">Order No :</span> <span id="pi-order"></span></div>
+        <div class="inv-f"><span class="fl">Transport :</span> <span id="pi-transport"></span></div>
+        <div class="inv-f"><span class="fl">L.R. No :</span> <span id="pi-lr"></span></div>
+      </div>
+    </div>
+    <div class="inv-goods-title">GOODS DETAILS TABLE</div>
+    <table class="inv-gt">
+      <thead><tr>
+        <th style="width:26px">S.N</th><th>Description of Goods</th>
+        <th style="width:68px">HSN</th><th style="width:42px">Qty</th>
+        <th style="width:64px">Rate</th><th style="width:74px">Amount</th>
+      </tr></thead>
+      <tbody id="pi-goods"></tbody>
+    </table>
+    <div class="inv-bottom">
+      <div class="inv-bank">
+        <div class="inv-bank-title">BANK &amp; TAX DETAILS</div>
+        <div class="inv-f"><span class="fl">Bank Name :</span> STATE BANK OF INDIA</div>
+        <div class="inv-f"><span class="fl">A/C No :</span> 38216876197</div>
+        <div class="inv-f"><span class="fl">IFSC Code :</span> SBIN0010206</div>
+        <div class="inv-f"><span class="fl">Branch :</span> CHIRALA</div>
+      </div>
+      <div class="inv-tax-col">
+        <div class="inv-tax-row"><span>Sub-Total (Excl. Tax) :</span><span id="pi-sub"></span></div>
+        <div class="inv-tax-row"><span>CGST @ <span id="pi-cgst-pct"></span>% :</span><span id="pi-cgst"></span></div>
+        <div class="inv-tax-row"><span>SGST @ <span id="pi-sgst-pct"></span>% :</span><span id="pi-sgst"></span></div>
+        <div class="inv-tax-row"><span>IGST @ <span id="pi-igst-pct"></span>% :</span><span id="pi-igst"></span></div>
+        <div class="inv-tax-row tot"><strong>Total Amount (Incl. Tax) :</strong><strong id="pi-total"></strong></div>
+      </div>
+    </div>
+    <div class="inv-words"><span class="fw">TOTAL AMOUNT IN WORDS (Rs.) :</span> <span id="pi-words"></span></div>
+    <div class="inv-sig">(Authorised Signatory)</div>
+  </div>
+
+  <!-- QUOTATION DOCUMENT -->
+  <div id="doc-quotation">
+    <div class="qt-header">
+      <div class="qt-logo">ॐ</div>
+      <div class="qt-company">
+        <h2>GODAVARI TENT WORKS</h2>
+        <div class="tagline">Manufacturers &amp; Suppliers of ALL TENT HOUSE MATERIALS</div>
+        <div class="address">D.No.5-26, Behind Renukamma Temple, Navabpet,</div>
+        <div class="city-line">CHIRALA - 523155, Prakasam Dt, A.P.</div>
+      </div>
+      <div class="qt-right">
+        <div class="quot-label">QUOTATION</div>
+        <div class="gstin-label">GSTIN:</div>
+        <div class="gstin-val">37APVPP7019J1Z3</div>
+        <div class="phone">📱 9295756242</div>
+      </div>
+    </div>
+
+    <!-- No / Date / State row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid #333">
+      <div style="padding:4px 9px;font-size:10px;border-right:1px solid #333"><strong>No :</strong> <span id="pq-no"></span></div>
+      <div style="padding:4px 9px;font-size:10px;border-right:1px solid #333"><strong>Date :</strong> <span id="pq-date"></span></div>
+      <div style="padding:4px 9px;font-size:10px"><strong>State : </strong><span id="pq-state"></span> &nbsp; <strong>State Code :</strong> <span id="pq-stcode"></span></div>
+    </div>
+
+    <!-- Customer + Branch Bank -->
+    <div class="qt-info">
+      <div class="qt-bill-col">
+        <div class="qt-f"><span class="fl">Name :</span> <span id="pq-name"></span></div>
+        <div class="qt-f"><span class="fl">Address :</span> <span id="pq-addr"></span></div>
+        <div class="qt-f"><span class="fl">Phone :</span> <span id="pq-phone"></span></div>
+        <div class="qt-f"><span class="fl">GSTIN/UIN :</span> <span id="pq-gstin"></span></div>
+      </div>
+      <div class="qt-meta-col">
+        <div class="qt-branch-box">
+          <div class="bbl">To the Branch Manager,</div>
+          <div class="bbl2"><strong>Bank Name :</strong> <span id="pq-bank"></span></div>
+          <div class="bbl2"><strong>Branch :</strong> <span id="pq-bankbranch"></span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Goods table -->
+    <table class="qt-gt">
+      <thead>
+        <tr>
+          <th rowspan="2" style="width:26px">Sl. No.</th>
+          <th rowspan="2">PARTICULARS</th>
+          <th rowspan="2" style="width:58px">HSN Code</th>
+          <th rowspan="2" style="width:38px">Qty.</th>
+          <th rowspan="2" style="width:44px">UOM</th>
+          <th rowspan="2" style="width:56px">Rate</th>
+          <th rowspan="2" style="width:64px">Amount</th>
+          <th colspan="2" style="width:96px">CGST</th>
+          <th colspan="2" style="width:96px">SGST</th>
+          <th colspan="2" style="width:96px">IGST</th>
+          <th rowspan="2" style="width:72px">TOTAL Rs. Ps.</th>
+        </tr>
+        <tr>
+          <th style="width:48px">Rate</th><th style="width:48px">Amount</th>
+          <th style="width:48px">Rate</th><th style="width:48px">Amount</th>
+          <th style="width:48px">Rate</th><th style="width:48px">Amount</th>
+        </tr>
+      </thead>
+      <tbody id="pq-goods"></tbody>
+      <tr style="border-top:1.5px solid #333">
+        <td colspan="6" style="text-align:right;font-weight:bold;font-size:10px;padding:3px 5px;border:1px solid #aaa">TOTAL</td>
+        <td class="tr" style="border:1px solid #aaa;padding:3px 4px;font-weight:bold" id="pq-subtotal-col"></td>
+        <td class="tc" style="border:1px solid #aaa;padding:3px 4px" id="pq-cgst-rate-col"></td>
+        <td class="tr" style="border:1px solid #aaa;padding:3px 4px" id="pq-cgst-amt-col"></td>
+        <td class="tc" style="border:1px solid #aaa;padding:3px 4px" id="pq-sgst-rate-col"></td>
+        <td class="tr" style="border:1px solid #aaa;padding:3px 4px" id="pq-sgst-amt-col"></td>
+        <td class="tc" style="border:1px solid #aaa;padding:3px 4px" id="pq-igst-rate-col"></td>
+        <td class="tr" style="border:1px solid #aaa;padding:3px 4px" id="pq-igst-amt-col"></td>
+        <td class="tr" style="border:1px solid #aaa;padding:3px 4px;font-weight:bold" id="pq-total-col"></td>
+      </tr>
+    </table>
+
+    <!-- Footer -->
+    <div class="qt-footer">
+      <div class="qt-foot-left">
+        <div style="font-weight:bold;margin-bottom:3px;font-size:9.5px">Bank</div>
+        <div style="font-size:9px">Krishna Bhima Samruddhi Local Area Bank</div>
+        <div style="font-size:9px">Branch: Chirala</div>
+        <div style="font-size:9px">A/c. No.: 19250007181</div>
+        <div style="font-size:9px">IFSC: HDFC0CKBS01</div>
+        <div style="margin-top:4px;font-weight:bold;font-size:9px">BankName: State Bank of India</div>
+        <div style="font-size:9px">Branch: Chirala</div>
+        <div style="font-size:9px">A/c. No.: 38216876197</div>
+        <div style="font-size:9px">IFSC: SBIN0010206</div>
+      </div>
+      <div class="qt-foot-mid" style="display:flex;flex-direction:column;justify-content:space-between">
+        <div>
+          <div style="font-weight:bold;font-size:9.5px;margin-bottom:3px">Rupees in words</div>
+          <div id="pq-words" style="font-size:9.5px"></div>
+        </div>
+        <div style="border:1px solid #333;padding:4px 6px;margin-top:6px">
+          <div style="font-weight:bold;font-size:9px;margin-bottom:3px">Terms &amp; Conditions:</div>
+          <div style="font-size:8.5px">E. &amp; O.E.</div>
+          <div style="font-size:8.5px">Subject to Chirala Jurisdiction</div>
+          <div style="font-size:8.5px">Goods once sold cannot be taken back</div>
+        </div>
+        <div style="margin-top:5px;font-size:9px;font-style:italic">For Godavari Tent Works</div>
+      </div>
+      <div class="qt-foot-right">
+        <div class="qtr-row"><span>Total Amount Before Tax</span><span id="pq-sub"></span></div>
+        <div class="qtr-row"><span>Add CGST</span><span id="pq-cgst"></span></div>
+        <div class="qtr-row"><span>Add SGST</span><span id="pq-sgst"></span></div>
+        <div class="qtr-row"><span>Add IGST</span><span id="pq-igst"></span></div>
+        <div class="qtr-row"><span>Roundoff</span><span id="pq-round"></span></div>
+        <div class="qtr-row bold"><span><strong>Total Amount After Tax</strong></span><span id="pq-total"><strong></strong></span></div>
+      </div>
+    </div>
+    <div class="qt-words-row">
+      <span style="font-weight:bold">Authorised Signatory</span>
+    </div>
+    <div class="qt-sig-row">
+      <div class="qt-sig-cell">Purchaser's Signature</div>
+      <div class="qt-sig-cell" style="border-right:1px solid #333">&nbsp;</div>
+      <div class="qt-sig-cell">Authorised Signatory</div>
+    </div>
+  </div>
+</div>
+
+<script>
+var currentDoc='invoice';
+var rowCountI=0,rowCountQ=0;
+
+function startDoc(type){
+  currentDoc=type;
+  document.getElementById('selector-page').style.display='none';
+  if(type==='invoice'){
+    document.getElementById('inv-form').style.display='block';
+    if(rowCountI===0){initRows('i',5);}
+  } else {
+    document.getElementById('quot-form').style.display='block';
+    if(rowCountQ===0){initRows('q',5);}
+  }
+  window.scrollTo(0,0);
+}
+
+function goBack(){
+  document.getElementById('inv-form').style.display='none';
+  document.getElementById('quot-form').style.display='none';
+  document.getElementById('selector-page').style.display='flex';
+  window.scrollTo(0,0);
+}
+
+function backToForm(){
+  document.getElementById('preview-page').style.display='none';
+  document.getElementById('doc-invoice').style.display='none';
+  document.getElementById('doc-quotation').style.display='none';
+  if(currentDoc==='invoice') document.getElementById('inv-form').style.display='block';
+  else document.getElementById('quot-form').style.display='block';
+  window.scrollTo(0,0);
+}
+
+function initRows(p,n){for(var i=0;i<n;i++)addRow(p);}
+
+function addRow(p){
+  var isQ=(p==='q');
+  if(isQ) rowCountQ++;
+  else rowCountI++;
+  var rc=isQ?rowCountQ:rowCountI;
+  var tbody=document.getElementById(p+'-goodsBody');
+  var idx=tbody.children.length+1;
+  var tr=document.createElement('tr');
+  tr.id=p+'row-'+rc;
+  var uomCol=isQ?'<td><input type="text" placeholder="Nos"></td>':'';
+  tr.innerHTML='<td><span class="sn-cell">'+idx+'</span></td>'
+    +'<td><input type="text" placeholder="Description"></td>'
+    +'<td><input type="text" placeholder="HSN"></td>'
+    +uomCol
+    +'<td><input type="number" placeholder="0" min="0" oninput="recalc(\''+p+'\')"></td>'
+    +'<td><input type="number" placeholder="0.00" min="0" step="0.01" oninput="recalc(\''+p+'\')"></td>'
+    +'<td><span class="amount-cell" id="'+p+'amt-'+rc+'">0.00</span></td>'
+    +'<td><button class="btn-del" onclick="delRow(\''+p+'\',\''+p+'row-'+rc+'\')">×</button></td>';
+  tbody.appendChild(tr);
+  recalc(p);
+}
+
+function delRow(p,id){var el=document.getElementById(id);if(el)el.remove();reIdx(p);recalc(p);}
+function reIdx(p){
+  var rows=document.querySelectorAll('#'+p+'-goodsBody tr');
+  for(var i=0;i<rows.length;i++){var s=rows[i].querySelector('.sn-cell');if(s)s.textContent=i+1;}
+}
+
+function recalc(p){
+  var sub=0;
+  var isQ=(p==='q');
+  var qOffset=isQ?1:0; // q has extra UOM column
+  var rows=document.querySelectorAll('#'+p+'-goodsBody tr');
+  for(var i=0;i<rows.length;i++){
+    var inp=rows[i].querySelectorAll('input');
+    var qtyIdx=isQ?3:2; var rateIdx=isQ?4:3;
+    var q=parseFloat(inp[qtyIdx]?inp[qtyIdx].value:0)||0;
+    var r=parseFloat(inp[rateIdx]?inp[rateIdx].value:0)||0;
+    var a=q*r; sub+=a;
+    var el=rows[i].querySelector('[id^="'+p+'amt-"]');
+    if(el)el.textContent=a.toFixed(2);
+  }
+  var cp=parseFloat(document.getElementById(p+'-cgst').value)||0;
+  var sp=parseFloat(document.getElementById(p+'-sgst').value)||0;
+  var ip=parseFloat(document.getElementById(p+'-igst').value)||0;
+  var ca=sub*cp/100,sa=sub*sp/100,ia=sub*ip/100,tot=sub+ca+sa+ia;
+  document.getElementById(p+'-disp-sub').textContent='Rs.'+sub.toFixed(2);
+  document.getElementById(p+'-disp-cgst').textContent='Rs.'+ca.toFixed(2);
+  document.getElementById(p+'-disp-sgst').textContent='Rs.'+sa.toFixed(2);
+  document.getElementById(p+'-disp-igst').textContent='Rs.'+ia.toFixed(2);
+  document.getElementById(p+'-disp-total').textContent='Rs.'+tot.toFixed(2);
+}
+
+function numToWords(n){
+  if(n===0)return'Zero';
+  var ones=['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
+  var tens=['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+  function b100(n){if(n<20)return ones[n];return tens[Math.floor(n/10)]+(n%10?' '+ones[n%10]:'');}
+  function b1000(n){if(n<100)return b100(n);return ones[Math.floor(n/100)]+' Hundred'+(n%100?' '+b100(n%100):'');}
+  var res='',x=n;
+  var cr=Math.floor(x/1e7);x=x%1e7;var la=Math.floor(x/1e5);x=x%1e5;var th=Math.floor(x/1000);x=x%1000;
+  if(cr)res+=b1000(cr)+' Crore ';if(la)res+=b1000(la)+' Lakh ';if(th)res+=b1000(th)+' Thousand ';if(x)res+=b1000(x);
+  return res.trim();
+}
+function totalInWords(t){var r=Math.floor(t),p=Math.round((t-r)*100);return numToWords(r)+' Rupees'+(p?' and '+numToWords(p)+' Paise':'')+' Only';}
+function fv(id){var el=document.getElementById(id);return el?el.value:'';}
+function sv(id,val){var el=document.getElementById(id);if(el)el.textContent=val;}
+function fmtDate(d){return d?new Date(d).toLocaleDateString('en-IN'):'';}
+
+function showPreview(type){
+  currentDoc=type;
+  document.getElementById('inv-form').style.display='none';
+  document.getElementById('quot-form').style.display='none';
+  document.getElementById('doc-invoice').style.display='none';
+  document.getElementById('doc-quotation').style.display='none';
+
+  if(type==='invoice'){
+    buildInvoice();
+    document.getElementById('doc-invoice').style.display='flex';
+    document.getElementById('preview-label').textContent='Tax Invoice Preview';
+  } else {
+    buildQuotation();
+    document.getElementById('doc-quotation').style.display='flex';
+    document.getElementById('preview-label').textContent='Quotation Preview';
+  }
+  document.getElementById('preview-page').style.display='block';
+  window.scrollTo(0,0);
+}
+
+function buildInvoice(){
+  sv('pi-no',fv('i-invNo'));
+  sv('pi-date',fmtDate(fv('i-date')));
+  sv('pi-name',fv('i-name'));sv('pi-addr',fv('i-address'));
+  sv('pi-gst',fv('i-recgst'));sv('pi-state',fv('i-state'));sv('pi-mobile',fv('i-mobile'));
+  sv('pi-order',fv('i-orderNo'));sv('pi-transport',fv('i-transport'));sv('pi-lr',fv('i-lrNo'));
+
+  var pg=document.getElementById('pi-goods');pg.innerHTML='';
+  var rows=document.querySelectorAll('#i-goodsBody tr');
+  for(var i=0;i<rows.length;i++){
+    var inp=rows[i].querySelectorAll('input');
+    var desc=inp[0]?inp[0].value:'',hsn=inp[1]?inp[1].value:'',qty=inp[2]?inp[2].value:'',rate=inp[3]?inp[3].value:'';
+    var amtEl=rows[i].querySelector('[id^="iamt-"]');var amt=amtEl?amtEl.textContent:'';
+    var tr2=document.createElement('tr');
+    tr2.innerHTML='<td class="tc">'+(i+1)+'</td><td>'+esc(desc)+'</td><td class="tc">'+esc(hsn)+'</td><td class="tc">'+qty+'</td><td class="tr">'+(rate?parseFloat(rate).toFixed(2):'')+'</td><td class="tr">'+(amt&&amt!='0.00'?amt:'')+'</td>';
+    pg.appendChild(tr2);
+  }
+  for(var j=rows.length;j<15;j++){var tr3=document.createElement('tr');tr3.innerHTML='<td class="tc">'+(j+1)+'</td><td>&nbsp;</td><td></td><td></td><td></td><td></td>';pg.appendChild(tr3);}
+
+  var sub=getNumVal('i-disp-sub');
+  var cp=parseFloat(fv('i-cgst'))||0,sp=parseFloat(fv('i-sgst'))||0,ip=parseFloat(fv('i-igst'))||0;
+  var tot=getNumVal('i-disp-total');
+  sv('pi-sub','Rs.'+sub.toFixed(2));
+  sv('pi-cgst-pct',cp);sv('pi-sgst-pct',sp);sv('pi-igst-pct',ip);
+  sv('pi-cgst','Rs.'+(sub*cp/100).toFixed(2));sv('pi-sgst','Rs.'+(sub*sp/100).toFixed(2));sv('pi-igst','Rs.'+(sub*ip/100).toFixed(2));
+  sv('pi-total','Rs.'+tot.toFixed(2));sv('pi-words',totalInWords(tot));
+}
+
+function buildQuotation(){
+  sv('pq-no',fv('q-no'));sv('pq-date',fmtDate(fv('q-date')));
+  sv('pq-state',fv('q-state'));sv('pq-stcode',fv('q-stcode'));
+  sv('pq-name',fv('q-name'));sv('pq-addr',fv('q-address'));
+  sv('pq-phone',fv('q-phone'));sv('pq-gstin',fv('q-gstin'));
+  sv('pq-bank',fv('q-bankname'));sv('pq-bankbranch',fv('q-bankbranch'));
+
+  var cp=parseFloat(fv('q-cgst'))||0,sp=parseFloat(fv('q-sgst'))||0,ip=parseFloat(fv('q-igst'))||0;
+  var pg=document.getElementById('pq-goods');pg.innerHTML='';
+  var rows=document.querySelectorAll('#q-goodsBody tr');
+  for(var i=0;i<rows.length;i++){
+    var inp=rows[i].querySelectorAll('input');
+    var desc=inp[0]?inp[0].value:'',hsn=inp[1]?inp[1].value:'',uom=inp[2]?inp[2].value:'',qty=inp[3]?inp[3].value:'',rate=inp[4]?inp[4].value:'';
+    var amtEl=rows[i].querySelector('[id^="qamt-"]');var amt=amtEl?parseFloat(amtEl.textContent)||0:0;
+    var cgstAmt=(amt*cp/100),sgstAmt=(amt*sp/100),igstAmt=(amt*ip/100),lineTotal=amt+cgstAmt+sgstAmt+igstAmt;
+    var tr2=document.createElement('tr');
+    tr2.innerHTML='<td class="tc">'+(i+1)+'</td><td>'+esc(desc)+'</td><td class="tc">'+esc(hsn)+'</td><td class="tc">'+qty+'</td><td class="tc">'+esc(uom)+'</td>'
+      +'<td class="tr">'+(rate?parseFloat(rate).toFixed(2):'')+'</td>'
+      +'<td class="tr">'+(amt?amt.toFixed(2):'')+'</td>'
+      +'<td class="tc">'+(cp?cp+'%':'')+'</td><td class="tr">'+(cgstAmt?cgstAmt.toFixed(2):'')+'</td>'
+      +'<td class="tc">'+(sp?sp+'%':'')+'</td><td class="tr">'+(sgstAmt?sgstAmt.toFixed(2):'')+'</td>'
+      +'<td class="tc">'+(ip?ip+'%':'')+'</td><td class="tr">'+(igstAmt?igstAmt.toFixed(2):'')+'</td>'
+      +'<td class="tr">'+(lineTotal?lineTotal.toFixed(2):'')+'</td>';
+    pg.appendChild(tr2);
+  }
+  for(var j=rows.length;j<12;j++){
+    var tr3=document.createElement('tr');
+    tr3.innerHTML='<td class="tc">'+(j+1)+'</td><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>';
+    pg.appendChild(tr3);
+  }
+
+  var sub=getNumVal('q-disp-sub');var tot=getNumVal('q-disp-total');
+  var ca=sub*cp/100,sa=sub*sp/100,ia=sub*ip/100;
+  var rounded=Math.round(tot);var roundoff=rounded-tot;
+  sv('pq-subtotal-col','Rs.'+sub.toFixed(2));
+  sv('pq-cgst-rate-col',cp?cp+'%':'');sv('pq-cgst-amt-col',ca?'Rs.'+ca.toFixed(2):'');
+  sv('pq-sgst-rate-col',sp?sp+'%':'');sv('pq-sgst-amt-col',sa?'Rs.'+sa.toFixed(2):'');
+  sv('pq-igst-rate-col',ip?ip+'%':'');sv('pq-igst-amt-col',ia?'Rs.'+ia.toFixed(2):'');
+  sv('pq-total-col','Rs.'+rounded.toFixed(2));
+  sv('pq-sub','Rs.'+sub.toFixed(2));
+  sv('pq-cgst','Rs.'+ca.toFixed(2));sv('pq-sgst','Rs.'+sa.toFixed(2));sv('pq-igst','Rs.'+ia.toFixed(2));
+  sv('pq-round',roundoff.toFixed(2));sv('pq-total','Rs.'+rounded.toFixed(2));
+  sv('pq-words',totalInWords(rounded));
+}
+
+function getNumVal(id){
+  var el=document.getElementById(id);
+  return el?parseFloat(el.textContent.replace('Rs.',''))||0:0;
+}
+function esc(s){
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function clearForm(p){
+  if(!confirm('Clear all fields?'))return;
+  var wrap=p==='i'?document.getElementById('inv-form'):document.getElementById('quot-form');
+  wrap.querySelectorAll('input[type=text],input[type=number],textarea').forEach(function(el){
+    if(el.id==='q-state')el.value='Andhra Pradesh';
+    else if(el.id==='q-stcode')el.value='37';
+    else if(el.id==='q-bankname')el.value='Krishna Bhima Samruddhi Local Area Bank';
+    else if(el.id==='q-bankbranch')el.value='Chirala';
+    else el.value='';
+  });
+  document.getElementById(p+'-goodsBody').innerHTML='';
+  if(p==='i'){rowCountI=0;initRows('i',5);}
+  else{rowCountQ=0;initRows('q',5);}
+  [p+'-cgst',p+'-sgst',p+'-igst'].forEach(function(id){var el=document.getElementById(id);if(el)el.value=0;});
+  recalc(p);
+}
+
+window.onload=function(){
+  var today=new Date();
+  var d=document.getElementById('i-date');if(d)d.valueAsDate=today;
+  var d2=document.getElementById('q-date');if(d2)d2.valueAsDate=today;
+};
+</script>
+</body>
+</html>
