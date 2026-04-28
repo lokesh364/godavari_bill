@@ -627,8 +627,8 @@ function addRow(p){
   var tr=document.createElement('tr');
   tr.id=p+'row-'+rc;
   var uomCol=isQ?'<td><input type="text" placeholder="Nos"></td>':'';
-  tr.innerHTML='<td><span class="sn-cell">'+idx+'</span></td>'
-    +'<td><input type="text" placeholder="Description"></td>'
+  tr.innerHTML='<td><span class="sn-cell" style="visibility:hidden"></span></td>'
+    +'<td><input type="text" placeholder="Description" oninput="updateSN(this,\''+p+'\');recalc(\''+p+'\')"></td>'
     +'<td><input type="text" placeholder="HSN"></td>'
     +uomCol
     +'<td><input type="number" placeholder="0" min="0" oninput="recalc(\''+p+'\')"></td>'
@@ -642,7 +642,19 @@ function addRow(p){
 function delRow(p,id){var el=document.getElementById(id);if(el)el.remove();reIdx(p);recalc(p);}
 function reIdx(p){
   var rows=document.querySelectorAll('#'+p+'-goodsBody tr');
-  for(var i=0;i<rows.length;i++){var s=rows[i].querySelector('.sn-cell');if(s)s.textContent=i+1;}
+  var visIdx=1;
+  for(var i=0;i<rows.length;i++){
+    var s=rows[i].querySelector('.sn-cell');
+    var descInp=rows[i].querySelectorAll('input')[0];
+    var hasDesc=descInp&&descInp.value.trim()!=='';
+    if(s){
+      if(hasDesc){s.textContent=visIdx++;s.style.visibility='visible';}
+      else{s.style.visibility='hidden';}
+    }
+  }
+}
+function updateSN(descInput,p){
+  reIdx(p);
 }
 
 function recalc(p){
@@ -740,15 +752,17 @@ function buildInvoice(){
 
   var pg=document.getElementById('pi-goods');pg.innerHTML='';
   var rows=document.querySelectorAll('#i-goodsBody tr');
+  var filledIdx=0;
   for(var i=0;i<rows.length;i++){
     var inp=rows[i].querySelectorAll('input');
     var desc=inp[0]?inp[0].value:'',hsn=inp[1]?inp[1].value:'',qty=inp[2]?inp[2].value:'',rate=inp[3]?inp[3].value:'';
     var amtEl=rows[i].querySelector('[id^="iamt-"]');var amt=amtEl?amtEl.textContent:'';
     var tr2=document.createElement('tr');
-    tr2.innerHTML='<td class="tc">'+(i+1)+'</td><td>'+esc(desc)+'</td><td class="tc">'+esc(hsn)+'</td><td class="tc">'+qty+'</td><td class="tr">'+(rate?parseFloat(rate).toFixed(2):'')+'</td><td class="tr">'+(amt&&amt!='0.00'?amt:'')+'</td>';
+    var snDisplay=desc.trim()?(++filledIdx):'';
+    tr2.innerHTML='<td class="tc">'+snDisplay+'</td><td>'+esc(desc)+'</td><td class="tc">'+esc(hsn)+'</td><td class="tc">'+qty+'</td><td class="tr">'+(rate?parseFloat(rate).toFixed(2):'')+'</td><td class="tr">'+(amt&&amt!='0.00'?amt:'')+'</td>';
     pg.appendChild(tr2);
   }
-  for(var j=rows.length;j<15;j++){var tr3=document.createElement('tr');tr3.innerHTML='<td class="tc">'+(j+1)+'</td><td>&nbsp;</td><td></td><td></td><td></td><td></td>';pg.appendChild(tr3);}
+  for(var j=rows.length;j<15;j++){var tr3=document.createElement('tr');tr3.innerHTML='<td class="tc"></td><td>&nbsp;</td><td></td><td></td><td></td><td></td>';pg.appendChild(tr3);}
 
   var sub=getNumVal('i-disp-sub');
   var cp=parseFloat(fv('i-cgst'))||0,sp=parseFloat(fv('i-sgst'))||0,ip=parseFloat(fv('i-igst'))||0;
@@ -782,13 +796,15 @@ function buildQuotation(){
   var cp=parseFloat(fv('q-cgst'))||0,sp=parseFloat(fv('q-sgst'))||0,ip=parseFloat(fv('q-igst'))||0;
   var pg=document.getElementById('pq-goods');pg.innerHTML='';
   var rows=document.querySelectorAll('#q-goodsBody tr');
+  var filledQIdx=0;
   for(var i=0;i<rows.length;i++){
     var inp=rows[i].querySelectorAll('input');
     var desc=inp[0]?inp[0].value:'',hsn=inp[1]?inp[1].value:'',uom=inp[2]?inp[2].value:'',qty=inp[3]?inp[3].value:'',rate=inp[4]?inp[4].value:'';
     var amtEl=rows[i].querySelector('[id^="qamt-"]');var amt=amtEl?parseFloat(amtEl.textContent)||0:0;
     var cgstAmt=(amt*cp/100),sgstAmt=(amt*sp/100),igstAmt=(amt*ip/100),lineTotal=amt+cgstAmt+sgstAmt+igstAmt;
     var tr2=document.createElement('tr');
-    tr2.innerHTML='<td class="tc">'+(i+1)+'</td><td>'+esc(desc)+'</td><td class="tc">'+esc(hsn)+'</td><td class="tc">'+qty+'</td><td class="tc">'+esc(uom)+'</td>'
+    var snDisplay=desc.trim()?(++filledQIdx):'';
+    tr2.innerHTML='<td class="tc">'+snDisplay+'</td><td>'+esc(desc)+'</td><td class="tc">'+esc(hsn)+'</td><td class="tc">'+qty+'</td><td class="tc">'+esc(uom)+'</td>'
       +'<td class="tr">'+(rate?parseFloat(rate).toFixed(2):'')+'</td>'
       +'<td class="tr">'+(amt?amt.toFixed(2):'')+'</td>'
       +'<td class="tc">'+(cp?cp+'%':'')+'</td><td class="tr">'+(cgstAmt?cgstAmt.toFixed(2):'')+'</td>'
@@ -799,7 +815,7 @@ function buildQuotation(){
   }
   for(var j=rows.length;j<12;j++){
     var tr3=document.createElement('tr');
-    tr3.innerHTML='<td class="tc">'+(j+1)+'</td><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>';
+    tr3.innerHTML='<td class="tc"></td><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>';
     pg.appendChild(tr3);
   }
 
