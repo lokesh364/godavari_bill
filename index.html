@@ -41,7 +41,8 @@ textarea{resize:vertical;min-height:60px}
 .goods-table th{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:8px 6px;text-align:left;border-bottom:1px solid var(--border)}
 .goods-table td{padding:4px 3px}
 .goods-table input{padding:7px 8px;font-size:13px}
-.col-sn{width:32px}.col-hsn{width:82px}.col-uom{width:70px}.col-qty{width:64px}.col-rate{width:84px}.col-amt{width:94px}.col-del{width:32px}
+.col-sn{width:32px}.col-hsn{width:82px}.col-uom{width:70px}.col-qty{width:64px}.col-rate{width:84px}.col-amt{width:94px}.col-del{width:32px}.col-tax{width:52px}
+.tax-inp{width:100%;padding:4px 3px;font-size:11px;text-align:center}
 .amount-cell{background:#f0f7f3;border:1px solid var(--border);border-radius:6px;padding:7px 8px;font-size:13px;font-family:'DM Mono',monospace;color:var(--accent);display:block;width:100%;font-weight:600}
 .sn-cell{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);text-align:center;padding-top:10px;display:block}
 .btn-del{background:none;border:none;color:#bbb;cursor:pointer;font-size:16px;padding:6px;transition:color .2s}
@@ -152,7 +153,7 @@ textarea{resize:vertical;min-height:60px}
 .qt-foot-right .qtr-row.bold{font-weight:bold;border-bottom:none}
 .qt-words-row{border-top:1px solid #333;padding:4px 8px;font-size:10px;display:flex;gap:8px}
 .qt-sig-row{border-top:1px solid #333;display:grid;grid-template-columns:1fr 1fr 1fr;font-size:10px}
-.qt-sig-cell{padding:22px 8px 5px;text-align:center;border-right:1px solid #333;font-weight:bold;font-size:9.5px}
+.qt-sig-cell{padding:60px 8px 8px;text-align:center;font-weight:bold;font-size:9.5px}
 .qt-sig-cell:last-child{border-right:none}
 
 /* ── TOGGLE SWITCH ── */
@@ -345,8 +346,8 @@ textarea{resize:vertical;min-height:60px}
   <div class="section">
     <div class="section-title">To Branch (Bank Details on Quotation)</div>
     <div class="grid-2">
-      <div><label>Bank Name</label><input type="text" id="q-bankname" value="Krishna Bhima Samruddhi Local Area Bank"></div>
-      <div><label>Branch</label><input type="text" id="q-bankbranch" value="Chirala"></div>
+      <div><label>Bank Name</label><input type="text" id="q-bankname" placeholder="Enter bank name"></div>
+      <div><label>Branch</label><input type="text" id="q-bankbranch" placeholder="Enter branch name"></div>
     </div>
   </div>
 
@@ -356,7 +357,9 @@ textarea{resize:vertical;min-height:60px}
       <thead><tr>
         <th class="col-sn">#</th><th>Particulars</th>
         <th class="col-hsn">HSN</th><th class="col-uom">UOM</th><th class="col-qty">Qty</th>
-        <th class="col-rate">Rate</th><th class="col-amt">Amount</th><th class="col-del"></th>
+        <th class="col-rate">Rate</th><th class="col-amt">Amount</th>
+        <th class="col-tax">CGST%</th><th class="col-tax">SGST%</th><th class="col-tax">IGST%</th>
+        <th class="col-del"></th>
       </tr></thead>
       <tbody id="q-goodsBody"></tbody>
     </table>
@@ -364,20 +367,13 @@ textarea{resize:vertical;min-height:60px}
   </div>
 
   <div class="section">
-    <div class="section-title">Tax Details</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-      <div>
-        <div class="tax-row"><label>CGST %</label><input type="number" id="q-cgst" value="0" min="0" max="100" step="0.1" oninput="recalc('q')"></div>
-        <div class="tax-row"><label>SGST %</label><input type="number" id="q-sgst" value="0" min="0" max="100" step="0.1" oninput="recalc('q')"></div>
-        <div class="tax-row" style="margin:0"><label>IGST %</label><input type="number" id="q-igst" value="0" min="0" max="100" step="0.1" oninput="recalc('q')"></div>
-      </div>
-      <div class="subtotal-box">
-        <div class="subtotal-line"><span>Sub-Total</span><span class="val" id="q-disp-sub">Rs.0.00</span></div>
-        <div class="subtotal-line"><span>CGST</span><span class="val" id="q-disp-cgst">Rs.0.00</span></div>
-        <div class="subtotal-line"><span>SGST</span><span class="val" id="q-disp-sgst">Rs.0.00</span></div>
-        <div class="subtotal-line"><span>IGST</span><span class="val" id="q-disp-igst">Rs.0.00</span></div>
-        <div class="subtotal-line total"><span>Total</span><span class="val" id="q-disp-total">Rs.0.00</span></div>
-      </div>
+    <div class="section-title">Tax Summary</div>
+    <div class="subtotal-box" style="max-width:320px;margin-left:auto">
+      <div class="subtotal-line"><span>Sub-Total</span><span class="val" id="q-disp-sub">Rs.0.00</span></div>
+      <div class="subtotal-line"><span>Total CGST</span><span class="val" id="q-disp-cgst">Rs.0.00</span></div>
+      <div class="subtotal-line"><span>Total SGST</span><span class="val" id="q-disp-sgst">Rs.0.00</span></div>
+      <div class="subtotal-line"><span>Total IGST</span><span class="val" id="q-disp-igst">Rs.0.00</span></div>
+      <div class="subtotal-line total"><span>Total</span><span class="val" id="q-disp-total">Rs.0.00</span></div>
     </div>
   </div>
 
@@ -539,28 +535,22 @@ textarea{resize:vertical;min-height:60px}
     <!-- Footer -->
     <div class="qt-footer">
       <div class="qt-foot-left">
-        <div style="font-weight:bold;margin-bottom:3px;font-size:9.5px">Bank</div>
-        <div style="font-size:9px">Krishna Bhima Samruddhi Local Area Bank</div>
-        <div style="font-size:9px">Branch: Chirala</div>
-        <div style="font-size:9px">A/c. No.: 19250007181</div>
-        <div style="font-size:9px">IFSC: HDFC0CKBS01</div>
-        <div style="margin-top:4px;font-weight:bold;font-size:9px">BankName: State Bank of India</div>
+        <div style="font-size:9px"><strong>Bank Name:</strong> State Bank of India</div>
         <div style="font-size:9px">Branch: Chirala</div>
         <div style="font-size:9px">A/c. No.: 38216876197</div>
         <div style="font-size:9px">IFSC: SBIN0010206</div>
+        <div style="margin-top:4px;font-size:9px"><strong>Bank Name:</strong> Krishna Bhima Samruddhi Local Area Bank</div>
+        <div style="font-size:9px">Branch: Chirala</div>
+        <div style="font-size:9px">A/c. No.: 19250007181</div>
+        <div style="font-size:9px">IFSC: HDFC0CKBS01</div>
       </div>
-      <div class="qt-foot-mid" style="display:flex;flex-direction:column;justify-content:space-between">
-        <div>
-          <div style="font-weight:bold;font-size:9.5px;margin-bottom:3px">Rupees in words</div>
-          <div id="pq-words" style="font-size:9.5px"></div>
-        </div>
-        <div style="border:1px solid #333;padding:4px 6px;margin-top:6px">
+      <div class="qt-foot-mid">
+        <div style="border:1px solid #333;padding:4px 6px;">
           <div style="font-weight:bold;font-size:9px;margin-bottom:3px">Terms &amp; Conditions:</div>
           <div style="font-size:8.5px">E. &amp; O.E.</div>
           <div style="font-size:8.5px">Subject to Chirala Jurisdiction</div>
           <div style="font-size:8.5px">Goods once sold cannot be taken back</div>
         </div>
-        <div style="margin-top:5px;font-size:9px;font-style:italic">For Godavari Tent Works</div>
       </div>
       <div class="qt-foot-right">
         <div class="qtr-row"><span>Total Amount Before Tax</span><span id="pq-sub"></span></div>
@@ -572,12 +562,16 @@ textarea{resize:vertical;min-height:60px}
       </div>
     </div>
     <div class="qt-words-row">
-      <span style="font-weight:bold">Authorised Signatory</span>
+      <span style="font-weight:bold;white-space:nowrap">Rupees in Words:</span>
+      <span id="pq-words" style="font-size:9.5px"></span>
     </div>
     <div class="qt-sig-row">
       <div class="qt-sig-cell">Purchaser's Signature</div>
-      <div class="qt-sig-cell" style="border-right:1px solid #333">&nbsp;</div>
-      <div class="qt-sig-cell">Authorised Signatory</div>
+      <div class="qt-sig-cell">&nbsp;</div>
+      <div class="qt-sig-cell" style="display:flex;flex-direction:column;justify-content:space-between;padding-top:8px;">
+        <div style="font-size:9px;font-style:italic;font-weight:bold">For Godavari Tent Works</div>
+        <div>Authorised Signatory</div>
+      </div>
     </div>
   </div>
 </div>
@@ -627,6 +621,11 @@ function addRow(p){
   var tr=document.createElement('tr');
   tr.id=p+'row-'+rc;
   var uomCol=isQ?'<td><input type="text" placeholder="Nos"></td>':'';
+  var taxCols=isQ
+    ?'<td><input type="number" class="tax-inp" placeholder="0" min="0" max="100" step="0.1" oninput="recalc(\'q\')"></td>'
+     +'<td><input type="number" class="tax-inp" placeholder="0" min="0" max="100" step="0.1" oninput="recalc(\'q\')"></td>'
+     +'<td><input type="number" class="tax-inp" placeholder="0" min="0" max="100" step="0.1" oninput="recalc(\'q\')"></td>'
+    :'';
   tr.innerHTML='<td><span class="sn-cell" style="visibility:hidden"></span></td>'
     +'<td><input type="text" placeholder="Description" oninput="updateSN(this,\''+p+'\');recalc(\''+p+'\')"></td>'
     +'<td><input type="text" placeholder="HSN"></td>'
@@ -634,6 +633,7 @@ function addRow(p){
     +'<td><input type="number" placeholder="0" min="0" oninput="recalc(\''+p+'\')"></td>'
     +'<td><input type="number" placeholder="0.00" min="0" step="0.01" oninput="recalc(\''+p+'\')"></td>'
     +'<td><span class="amount-cell" id="'+p+'amt-'+rc+'">0.00</span></td>'
+    +taxCols
     +'<td><button class="btn-del" onclick="delRow(\''+p+'\',\''+p+'row-'+rc+'\')">×</button></td>';
   tbody.appendChild(tr);
   recalc(p);
@@ -660,8 +660,8 @@ function updateSN(descInput,p){
 function recalc(p){
   var sub=0;
   var isQ=(p==='q');
-  var qOffset=isQ?1:0; // q has extra UOM column
   var rows=document.querySelectorAll('#'+p+'-goodsBody tr');
+  var totalCGST=0,totalSGST=0,totalIGST=0;
   for(var i=0;i<rows.length;i++){
     var inp=rows[i].querySelectorAll('input');
     var qtyIdx=isQ?3:2; var rateIdx=isQ?4:3;
@@ -670,6 +670,24 @@ function recalc(p){
     var a=q*r; sub+=a;
     var el=rows[i].querySelector('[id^="'+p+'amt-"]');
     if(el)el.textContent=a.toFixed(2);
+    if(isQ){
+      // tax inputs are at index 5,6,7 (after desc,hsn,uom,qty,rate = 0..4, amt is span not input)
+      var cp2=parseFloat(inp[5]?inp[5].value:0)||0;
+      var sp2=parseFloat(inp[6]?inp[6].value:0)||0;
+      var ip2=parseFloat(inp[7]?inp[7].value:0)||0;
+      totalCGST+=a*cp2/100;
+      totalSGST+=a*sp2/100;
+      totalIGST+=a*ip2/100;
+    }
+  }
+  if(isQ){
+    var tot=sub+totalCGST+totalSGST+totalIGST;
+    document.getElementById('q-disp-sub').textContent='Rs.'+sub.toFixed(2);
+    document.getElementById('q-disp-cgst').textContent='Rs.'+totalCGST.toFixed(2);
+    document.getElementById('q-disp-sgst').textContent='Rs.'+totalSGST.toFixed(2);
+    document.getElementById('q-disp-igst').textContent='Rs.'+totalIGST.toFixed(2);
+    document.getElementById('q-disp-total').textContent='Rs.'+tot.toFixed(2);
+    return;
   }
   var cp=parseFloat(document.getElementById(p+'-cgst').value)||0;
   var sp=parseFloat(document.getElementById(p+'-sgst').value)||0;
@@ -793,23 +811,27 @@ function buildQuotation(){
   sv('pq-phone',fv('q-phone'));sv('pq-gstin',fv('q-gstin'));
   sv('pq-bank',fv('q-bankname'));sv('pq-bankbranch',fv('q-bankbranch'));
 
-  var cp=parseFloat(fv('q-cgst'))||0,sp=parseFloat(fv('q-sgst'))||0,ip=parseFloat(fv('q-igst'))||0;
   var pg=document.getElementById('pq-goods');pg.innerHTML='';
   var rows=document.querySelectorAll('#q-goodsBody tr');
   var filledQIdx=0;
+  var totalSub=0,totalCA=0,totalSA=0,totalIA=0,totalLine=0;
   for(var i=0;i<rows.length;i++){
     var inp=rows[i].querySelectorAll('input');
     var desc=inp[0]?inp[0].value:'',hsn=inp[1]?inp[1].value:'',uom=inp[2]?inp[2].value:'',qty=inp[3]?inp[3].value:'',rate=inp[4]?inp[4].value:'';
+    var cp2=parseFloat(inp[5]?inp[5].value:0)||0;
+    var sp2=parseFloat(inp[6]?inp[6].value:0)||0;
+    var ip2=parseFloat(inp[7]?inp[7].value:0)||0;
     var amtEl=rows[i].querySelector('[id^="qamt-"]');var amt=amtEl?parseFloat(amtEl.textContent)||0:0;
-    var cgstAmt=(amt*cp/100),sgstAmt=(amt*sp/100),igstAmt=(amt*ip/100),lineTotal=amt+cgstAmt+sgstAmt+igstAmt;
+    var cgstAmt=(amt*cp2/100),sgstAmt=(amt*sp2/100),igstAmt=(amt*ip2/100),lineTotal=amt+cgstAmt+sgstAmt+igstAmt;
+    totalSub+=amt;totalCA+=cgstAmt;totalSA+=sgstAmt;totalIA+=igstAmt;totalLine+=lineTotal;
     var tr2=document.createElement('tr');
     var snDisplay=desc.trim()?(++filledQIdx):'';
     tr2.innerHTML='<td class="tc">'+snDisplay+'</td><td>'+esc(desc)+'</td><td class="tc">'+esc(hsn)+'</td><td class="tc">'+qty+'</td><td class="tc">'+esc(uom)+'</td>'
       +'<td class="tr">'+(rate?parseFloat(rate).toFixed(2):'')+'</td>'
       +'<td class="tr">'+(amt?amt.toFixed(2):'')+'</td>'
-      +'<td class="tc">'+(cp?cp+'%':'')+'</td><td class="tr">'+(cgstAmt?cgstAmt.toFixed(2):'')+'</td>'
-      +'<td class="tc">'+(sp?sp+'%':'')+'</td><td class="tr">'+(sgstAmt?sgstAmt.toFixed(2):'')+'</td>'
-      +'<td class="tc">'+(ip?ip+'%':'')+'</td><td class="tr">'+(igstAmt?igstAmt.toFixed(2):'')+'</td>'
+      +'<td class="tc">'+(cp2?cp2+'%':'')+'</td><td class="tr">'+(cgstAmt?cgstAmt.toFixed(2):'')+'</td>'
+      +'<td class="tc">'+(sp2?sp2+'%':'')+'</td><td class="tr">'+(sgstAmt?sgstAmt.toFixed(2):'')+'</td>'
+      +'<td class="tc">'+(ip2?ip2+'%':'')+'</td><td class="tr">'+(igstAmt?igstAmt.toFixed(2):'')+'</td>'
       +'<td class="tr">'+(lineTotal?lineTotal.toFixed(2):'')+'</td>';
     pg.appendChild(tr2);
   }
@@ -819,17 +841,15 @@ function buildQuotation(){
     pg.appendChild(tr3);
   }
 
-  var sub=getNumVal('q-disp-sub');var tot=getNumVal('q-disp-total');
-  var ca=sub*cp/100,sa=sub*sp/100,ia=sub*ip/100;
-  var rounded=Math.round(tot);var roundoff=rounded-tot;
-  sv('pq-subtotal-col','Rs.'+sub.toFixed(2));
-  sv('pq-cgst-rate-col',cp?cp+'%':'');sv('pq-cgst-amt-col',ca?'Rs.'+ca.toFixed(2):'');
-  sv('pq-sgst-rate-col',sp?sp+'%':'');sv('pq-sgst-amt-col',sa?'Rs.'+sa.toFixed(2):'');
-  sv('pq-igst-rate-col',ip?ip+'%':'');sv('pq-igst-amt-col',ia?'Rs.'+ia.toFixed(2):'');
+  var rounded=Math.round(totalLine);var roundoff=rounded-totalLine;
+  sv('pq-subtotal-col','Rs.'+totalSub.toFixed(2));
+  sv('pq-cgst-rate-col','');sv('pq-cgst-amt-col',totalCA?'Rs.'+totalCA.toFixed(2):'');
+  sv('pq-sgst-rate-col','');sv('pq-sgst-amt-col',totalSA?'Rs.'+totalSA.toFixed(2):'');
+  sv('pq-igst-rate-col','');sv('pq-igst-amt-col',totalIA?'Rs.'+totalIA.toFixed(2):'');
   sv('pq-total-col','Rs.'+rounded.toFixed(2));
-  sv('pq-sub','Rs.'+sub.toFixed(2));
-  sv('pq-cgst','Rs.'+ca.toFixed(2));sv('pq-sgst','Rs.'+sa.toFixed(2));sv('pq-igst','Rs.'+ia.toFixed(2));
-  sv('pq-round',roundoff.toFixed(2));sv('pq-total','Rs.'+rounded.toFixed(2));
+  sv('pq-sub','Rs.'+totalSub.toFixed(2));
+  sv('pq-cgst','Rs.'+totalCA.toFixed(2));sv('pq-sgst','Rs.'+totalSA.toFixed(2));sv('pq-igst','Rs.'+totalIA.toFixed(2));
+  sv('pq-round',roundoff?roundoff.toFixed(2):'');sv('pq-total','Rs.'+rounded.toFixed(2));
   sv('pq-words',totalInWords(rounded));
 }
 
@@ -847,8 +867,8 @@ function clearForm(p){
   wrap.querySelectorAll('input[type=text],input[type=number],textarea').forEach(function(el){
     if(el.id==='q-state')el.value='Andhra Pradesh';
     else if(el.id==='q-stcode')el.value='37';
-    else if(el.id==='q-bankname')el.value='Krishna Bhima Samruddhi Local Area Bank';
-    else if(el.id==='q-bankbranch')el.value='Chirala';
+    else if(el.id==='q-bankname')el.value='';
+    else if(el.id==='q-bankbranch')el.value='';
     else el.value='';
   });
   document.getElementById(p+'-goodsBody').innerHTML='';
